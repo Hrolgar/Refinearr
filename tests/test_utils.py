@@ -1,5 +1,5 @@
 import time
-from utils.utils import readable_size, format_date
+from utils import readable_size, format_date
 
 def test_readable_size_bytes():
     assert readable_size(512) == "512 bytes"
