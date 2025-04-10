@@ -20,12 +20,15 @@ pip install -r requirements.txt
 if [ ! -f ".env" ]; then
     echo "Creating .env file with default values..."
     cat <<EOF > .env
-BASE_URL=http://10.69.4.6:8080/api/v2
-USERNAME=username
-PASSWORD=password
+QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+QBIT_USERNAME=username
+QBIT_PASSWORD=password
+SONARR_QBIT_BASE_URL=http://10.69.4.4:8989
+SONARR_API_KEY=sonarr_api_key
 AGE_THRESHOLD_DAYS=16
 LAST_ACTIVITY_THRESHOLD_DAYS=10
-RUN_TIME=02:00
+QBIT_RUN_TIME=02:00
+SONARR_RUN_TIME=02:00
 SLEEP_INTERVAL=60
 EOF
 else

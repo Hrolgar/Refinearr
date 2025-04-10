@@ -21,12 +21,15 @@ REM Check if the .env file exists; if not, create it.
 if not exist ".env" (
     echo Creating .env file with default values...
     (
-        echo BASE_URL=http://10.69.4.6:8080/api/v2
-        echo USERNAME=username
-        echo PASSWORD=password
+        echo QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+        echo QBIT_USERNAME=username
+        echo QBIT_PASSWORD=password
+        echo SONARR_BASE_URL=http://10.69.4.4:8989
+        echo SONARR_API_KEY=sonarr_api_key
         echo AGE_THRESHOLD_DAYS=16
         echo LAST_ACTIVITY_THRESHOLD_DAYS=10
-        echo RUN_TIME=02:00
+        echo QBIT_RUN_TIME=02:00
+        echo SONARR_RUN_TIME=03:00
         echo SLEEP_INTERVAL=60
     ) > .env
 ) else (

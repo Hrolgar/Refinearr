@@ -31,11 +31,11 @@ def check_services():
     services = []
     if os.getenv("QBIT_BASE_URL") and os.getenv("QBIT_USERNAME") and os.getenv("QBIT_PASSWORD"):
         services.append("qbit")
-    if os.getenv("SONARR_BASEURL") and os.getenv("SONARR_API_KEY"):
+    if os.getenv("SONARR_BASE_URL") and os.getenv("SONARR_API_KEY"):
         services.append("sonarr")
     return services
 
-def schedule_services(non_interactive: bool):
+def schedule_services():
     """
     Schedule all enabled services with their own run times.
     This function schedules each service's job and then enters one infinite loop.
@@ -86,7 +86,7 @@ def main():
     logger.info(f"Starting with arguments: {args}")
 
     if args.schedule:
-        schedule_services(non_interactive=args.non_interactive)
+        schedule_services()
     else:
         run_services(non_interactive=args.non_interactive)
 
