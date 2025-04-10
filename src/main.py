@@ -1,8 +1,10 @@
 import os
 import argparse
+import schedule
+import time
 from utils import logger
+from services import QbitService, SonarrService
 from dotenv import load_dotenv
-from services import schedule_qbit, run_qbit_cleanup
 
 load_dotenv(override=True)
 
@@ -29,148 +31,65 @@ def check_services():
     services = []
     if os.getenv("QBIT_BASE_URL") and os.getenv("QBIT_USERNAME") and os.getenv("QBIT_PASSWORD"):
         services.append("qbit")
-    if os.getenv("SONARR_BASEURL") and os.getenv("SONARR_USERNAME") and os.getenv("SONARR_PASSWORD"):
+    if os.getenv("SONARR_BASEURL") and os.getenv("SONARR_API_KEY"):
         services.append("sonarr")
     return services
+
+def schedule_services(non_interactive: bool):
+    """
+    Schedule all enabled services with their own run times.
+    This function schedules each service's job and then enters one infinite loop.
+    """
+    services = check_services()
+    logger.info(f"Services to schedule: {services}")
+
+    if "qbit" in services:
+        qbit_run_time = os.getenv("QBIT_RUN_TIME", "02:00")
+        qbit_service = QbitService()
+        qbit_service.register_schedule(run_time=qbit_run_time)
+        logger.info("Registered qBit cleanup schedule at %s", qbit_run_time)
+
+    if "sonarr" in services:
+        sonarr_run_time = os.getenv("SONARR_RUN_TIME", "03:00")
+        logger.info(f"Scheduling Sonarr cleanup daily at {sonarr_run_time} (non-interactive).")
+        sonarr_service = SonarrService()
+        sonarr_service.register_schedule(run_time=sonarr_run_time)
+
+    sleep_interval = int(os.getenv("SLEEP_INTERVAL", 60))
+    logger.info("Entering scheduling loop. Press Ctrl+C to exit.")
+    while True:
+        schedule.run_pending()
+        time.sleep(sleep_interval)
+
+def run_services(non_interactive: bool):
+    """
+    Run each enabled service once.
+    """
+    services = check_services()
+    logger.info(f"Services to run: {services}")
+
+    if "qbit" in services:
+        logger.info("Running qBit cleanup...")
+        qbit_service = QbitService()
+
+        logger.info("qBit cleanup will run once in interactive mode." if non_interactive else "qBit cleanup will run in non-interactive mode.")
+        qbit_service.run_cleanup(interactive=not non_interactive)
+
+    # if "sonarr" in services:
+    #     logger.info("Running Sonarr cleanup...")
+    #     sonarr_service = SonarrService()
+    #     # sonarr_service.start()
+
 
 def main():
     args = parse_args()
     logger.info(f"Starting with arguments: {args}")
-    services_to_run = check_services()
-    logger.info(f"Services to run: {services_to_run}")
+
     if args.schedule:
-        logger.info("Scheduling the job to run daily...")
-        schedule_qbit(run_time=os.environ.get("RUN_TIME", "02:00"))
-    elif args.non_interactive:
-        logger.info("Running in non-interactive mode...")
-        run_qbit_cleanup(interactive=False)
+        schedule_services(non_interactive=args.non_interactive)
     else:
-        logger.info("Running in interactive mode...")
-        run_qbit_cleanup(interactive=True)
-
-
+        run_services(non_interactive=args.non_interactive)
 
 if __name__ == "__main__":
     main()
 
-
-# SECONDS_PER_DAY = 86400
-# AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", 16))
-# LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("LAST_ACTIVITY_THRESHOLD_DAYS", 10))
-
-# def is_ready_for_delete(torrent, current_time):
-#     added_age = current_time - torrent.get("added_on", 0)
-#     last_activity_age = current_time - torrent.get("last_activity", 0)
-#     popularity = torrent.get("popularity", 1.0)
-#     is_audiobook = torrent.get("category") == "audiobooks"
-#     return (added_age > AGE_THRESHOLD_DAYS * SECONDS_PER_DAY and
-#             last_activity_age > LAST_ACTIVITY_THRESHOLD_DAYS * SECONDS_PER_DAY and
-#             popularity < 0.6 and not is_audiobook)
-
-
-# def process_torrents(filtered_torrents, interactive=True):
-#     """
-#     Process (delete) filtered torrents.
-    
-#     :param filtered_torrents: List of torrent dictionaries to process.
-#     :param interactive: If True, prompt for each torrent; otherwise process automatically.
-#     """
-#     delete_all = False
-#     for torrent in filtered_torrents:
-#         print_torrent_details(torrent)
-#         torrent_name = torrent.get('name', 'Unknown Name')
-#         torrent_hash = torrent.get('hash')
-
-#         if delete_all:
-#             logger.info(f"Automatically deleting torrent: {torrent_name}")
-#             delete_torrent(torrent_name, torrent_hash, delete_files=True)
-#             continue
-
-#         if interactive:
-#             answer = input("Do you want to delete this torrent? (yes/no/deleteall/exit): ").strip().lower()
-#             if answer == "exit":
-#                 logger.info("Exiting the processing loop.")
-#                 break
-#             elif answer == "deleteall":
-#                 delete_all = True
-#                 logger.info(f"Deleting torrent {torrent_name} and all remaining torrents automatically.")
-#                 delete_torrent(torrent_name, torrent_hash, delete_files=True)
-#             elif answer in ("yes", "y"):
-#                 delete_torrent(torrent_name, torrent_hash, delete_files=True)
-#             elif answer in ("no", "n"):
-#                 logger.info(f"Skipping torrent: {torrent_name}\n")
-#             else:
-#                 logger.info("Unrecognized option; skipping torrent.\n")
-#         else:
-#             # Non-interactive mode: automatically delete each torrent.
-#             logger.info(f"Automatically deleting torrent: {torrent_name}")
-#             delete_torrent(torrent_name, torrent_hash, delete_files=True)
-
-
-# def main(interactive=True):
-
-#     if not login():
-#         logger.error("Login failed during scheduled run. Skipping execution of this cycle.")
-#         return
-    
-#     torrents = list_torrents()
-#     if not torrents:
-#         logger.info("No torrents found.")
-#         return
-
-#     current_time = time.time()
-#     filtered_torrents = [torrent for torrent in torrents if is_ready_for_delete(torrent, current_time)]
-    
-#     logger.info(f"Filtered torrents (older than {AGE_THRESHOLD_DAYS} days and last activity over {LAST_ACTIVITY_THRESHOLD_DAYS} days):")
-#     logger.info(f"Total torrents in the filtered list: {len(filtered_torrents)}\n")
-
-#     if not filtered_torrents:
-#         logger.info("No torrents are ready for deletion based on the filters.")
-#         logger.info("Next scheduled run will be in 24 hours.")
-#         return
-
-#     process_torrents(filtered_torrents, interactive)
-
-
-# def parse_args():
-#     """
-#     Parse command-line arguments and return the resulting namespace.
-#     Supported arguments:
-#       --non-interactive   Run in non-interactive mode (auto-delete filtered torrents)
-#       --schedule          Run the job on a continuous schedule (e.g., once per day)
-#     """
-#     parser = argparse.ArgumentParser(description="qBittorrent Cleanup Script")
-#     parser.add_argument("--non-interactive", action="store_true",
-#                         help="Run in non-interactive mode (auto-delete filtered torrents)")
-#     parser.add_argument("--schedule", action="store_true",
-#                         help="Run the job on a continuous schedule")
-#     return parser.parse_args()
-
-
-# if __name__ == "__main__":
-#     args = parse_args()
-
-#     if not all([os.getenv("USERNAME"), os.getenv("PASSWORD"), os.getenv("BASE_URL")]):
-#         logger.info("Please set USERNAME, PASSWORD, and BASE_URL in the .env file.")
-#         exit(1)
-
-#     logger.info("Starting qBittorrent cleanup script...")
-
-#     if args.schedule: 
-#         run_time = os.environ.get("RUN_TIME", "02:00") # Default to 2 AM if not set
-#         logger.info(f"Scheduling the job to run daily at {run_time}...")
-#         schedule.every().day.at(run_time).do(main, interactive=False)
-
-#         while True:
-#             schedule.run_pending()
-#             time.sleep(int(os.environ.get("SLEEP_INTERVAL", 60))) 
-#     else:
-#         logger.info("Running the script without scheduling.")
-#         if args.non_interactive:
-#             logger.info("Running in non-interactive mode.")
-#             main(interactive=False)
-#         else:
-#             logger.info("Running in interactive mode.")
-#             main(interactive=True)
-
-#     logger.info("Finished processing torrents.")

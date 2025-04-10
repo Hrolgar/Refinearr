@@ -1,3 +1,3 @@
-from .qbit_api import login, list_torrents, delete_torrent
-
-__all__ = ['login', 'list_torrents', 'delete_torrent']
+from .qbit_api import QbitAPI
+from .sonarr_api import SonarrAPI
+__all__ = ['QbitAPI', 'SonarrAPI']

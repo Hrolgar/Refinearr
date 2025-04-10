@@ -1,5 +1,5 @@
 import time
-from utils import logger
+from src.utils.logger import logger
 
 def readable_size(num_bytes):
     """Converts a size in bytes into a human-readable format (GiB, MiB, etc.)."""
