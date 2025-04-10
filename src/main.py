@@ -86,14 +86,23 @@ def main(interactive=True):
     process_torrents(filtered_torrents, interactive)
 
 
-if __name__ == "__main__":
+def parse_args():
+    """
+    Parse command-line arguments and return the resulting namespace.
+    Supported arguments:
+      --non-interactive   Run in non-interactive mode (auto-delete filtered torrents)
+      --schedule          Run the job on a continuous schedule (e.g., once per day)
+    """
     parser = argparse.ArgumentParser(description="qBittorrent Cleanup Script")
     parser.add_argument("--non-interactive", action="store_true",
                         help="Run in non-interactive mode (auto-delete filtered torrents)")
     parser.add_argument("--schedule", action="store_true",
-                    help="Run the job on a schedule continuously")
-    
-    args = parser.parse_args()
+                        help="Run the job on a continuous schedule")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
 
     if not all([os.getenv("USERNAME"), os.getenv("PASSWORD"), os.getenv("BASE_URL")]):
         logger.info("Please set USERNAME, PASSWORD, and BASE_URL in the .env file.")

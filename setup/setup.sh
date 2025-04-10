@@ -26,7 +26,7 @@ PASSWORD=password
 AGE_THRESHOLD_DAYS=16
 LAST_ACTIVITY_THRESHOLD_DAYS=10
 RUN_TIME=02:00
-SLEEP_TIME=60
+SLEEP_INTERVAL=60
 EOF
 else
     echo ".env file already exists. Skipping creation."
