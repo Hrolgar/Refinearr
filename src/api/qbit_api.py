@@ -1,11 +1,11 @@
 import os
 import requests
-from utils import logger
+from src.utils import logger
 
 session = requests.session()
 
 def get_base_url():
-    return os.environ.get("BASE_URL", "http://127.0.0.1:8080/api/v2")
+    return os.environ.get("QBIT_BASE_URL", "http://127.0.0.1:8080/api/v2")
 
 
 def login():
@@ -18,8 +18,8 @@ def login():
     logger.info (f"Logging in to {login_url} with username {os.getenv('USERNAME')}")
     
     data = {
-        'username': os.getenv('USERNAME'),
-        'password': os.getenv('PASSWORD')
+        'username': os.getenv('QBIT_USERNAME'),
+        'password': os.getenv('QBIT_PASSWORD')
     }
     response = session.post(login_url, data=data)
 

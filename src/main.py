@@ -1,45 +1,54 @@
 import os
-from dotenv import load_dotenv
-import time
-import schedule
 import argparse
-from utils import print_torrent_details, logger
-from api import login, list_torrents, delete_torrent
+from utils import logger
 from dotenv import load_dotenv
-load_dotenv(override=True)  
+from services import schedule_qbit, run_qbit_cleanup
 
+load_dotenv(override=True)
 
 def parse_args():
+    """
+    Parse command-line arguments and return the resulting namespace.
+    Supported arguments:
+        --non-interactive   Run in non-interactive mode (auto-delete).
+        --schedule          Run on a daily schedule and never exit.
+    :return: Namespace with parsed arguments.
+    """
     parser = argparse.ArgumentParser(description="Multi-Service Cleanup Script")
-    parser.add_argument("--service", choices=["qbit", "sonarr", "both"],
-                        default="qbit",
-                        help="Which service(s) to run: qbit, sonarr, or both.")
-    parser.add_argument("--non-interactive", action="store_true",
-                        help="Run in non-interactive mode (auto-delete).")
-    parser.add_argument("--schedule", action="store_true",
-                        help="Run on a daily schedule and never exit.")
-    parser.add_argument("--qbit-time", default=os.getenv("QBIT_RUN_TIME", "02:00"),
-                        help="Daily run time for qBit if --schedule is used. Default 02:00.")
-    parser.add_argument("--sonarr-time", default=os.getenv("SONARR_RUN_TIME", "03:00"),
-                        help="Daily run time for Sonarr if --schedule is used. Default 03:00.")
+    # parser.add_argument("--service", choices=["qbit", "sonarr", "both"], default="qbit", help="Which service(s) to run: qbit, sonarr, or both.")
+    parser.add_argument("--non-interactive", action="store_true", help="Run in non-interactive mode (auto-delete).")
+    parser.add_argument("--schedule", action="store_true", help="Run on a daily schedule and never exit.")
     return parser.parse_args()
+
+# Check what to run, is based on the .env file, for example, if qbitBaseurl, username and password are set, then run qbit.  if sonarrBaseurl, username and password are set, then run sonarr.  if both are set, then run both.
+def check_services():
+    """
+    Check which services are enabled based on environment variables.
+    :return: List of services to run.
+    """
+    services = []
+    if os.getenv("QBIT_BASE_URL") and os.getenv("QBIT_USERNAME") and os.getenv("QBIT_PASSWORD"):
+        services.append("qbit")
+    if os.getenv("SONARR_BASEURL") and os.getenv("SONARR_USERNAME") and os.getenv("SONARR_PASSWORD"):
+        services.append("sonarr")
+    return services
 
 def main():
     args = parse_args()
     logger.info(f"Starting with arguments: {args}")
-
-    # If scheduling is enabled:
+    services_to_run = check_services()
+    logger.info(f"Services to run: {services_to_run}")
     if args.schedule:
-        if args.service in ["qbit", "both"]:
-            schedule_qbit(run_time=args.qbit_time, interactive=not args.non_interactive)
-        if args.service in ["sonarr", "both"]:
-            schedule_sonarr(run_time=args.sonarr_time, interactive=not args.non_interactive)
+        logger.info("Scheduling the job to run daily...")
+        schedule_qbit(run_time=os.environ.get("RUN_TIME", "02:00"))
+    elif args.non_interactive:
+        logger.info("Running in non-interactive mode...")
+        run_qbit_cleanup(interactive=False)
     else:
-        # One-time run
-        if args.service in ["qbit", "both"]:
-            run_qbit_cleanup(interactive=not args.non_interactive)
-        if args.service in ["sonarr", "both"]:
-            run_sonarr_cleanup(interactive=not args.non_interactive)
+        logger.info("Running in interactive mode...")
+        run_qbit_cleanup(interactive=True)
+
+
 
 if __name__ == "__main__":
     main()

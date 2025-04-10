@@ -1,16 +1,30 @@
-import os
 import schedule
 import time
-from utils.logger import logger
-from api import login, list_torrents, delete_torrent
-from utils.utils import print_torrent_details, is_ready_for_delete
+import os
+from src.utils import logger, print_torrent_details
+from src.api import login, list_torrents, delete_torrent
+
+SECONDS_PER_DAY = 86400
+AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", 16))
+LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("LAST_ACTIVITY_THRESHOLD_DAYS", 10))
+
+
+def is_ready_for_delete(torrent, current_time):
+    added_age = current_time - torrent.get("added_on", 0)
+    last_activity_age = current_time - torrent.get("last_activity", 0)
+    popularity = torrent.get("popularity", 1.0)
+    is_audiobook = torrent.get("category") == "audiobooks"
+    return (added_age > AGE_THRESHOLD_DAYS * SECONDS_PER_DAY and
+            last_activity_age > LAST_ACTIVITY_THRESHOLD_DAYS * SECONDS_PER_DAY and
+            popularity < 0.6 and not is_audiobook)
+
 
 def run_qbit_cleanup(interactive=True):
     """
     Performs the qBittorrent cleanup logic once.
     """
     if not login():
-        logger.error("qBit login failed.")
+        logger.info("qBit login failed.")
         return
 
     torrents = list_torrents()
@@ -49,12 +63,12 @@ def run_qbit_cleanup(interactive=True):
             logger.info("[qBit] Exiting loop.")
             break
 
-def schedule_qbit(run_time="02:00", interactive=False, sleep_interval=60):
+def schedule_qbit(run_time="02:00", sleep_interval=60):
     """
     Runs qBit cleanup daily at the specified run_time in non-interactive mode by default.
     """
-    logger.info(f"Scheduling qBit cleanup daily at {run_time}. Non-interactive={not interactive}")
-    schedule.every().day.at(run_time).do(run_qbit_cleanup, interactive=interactive)
+    logger.info(f"Scheduling qBit cleanup daily at {run_time}")
+    schedule.every().day.at(run_time).do(run_qbit_cleanup, interactive=False)
     while True:
         schedule.run_pending()
         time.sleep(sleep_interval)

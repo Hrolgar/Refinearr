@@ -1,4 +1,4 @@
-# qBittorrent Manager
+# Refinarr
 
 This project provides a command-line tool to filter and delete torrents from qBittorrent based on defined criteria (e.g., age, last activity, popularity). It features interactive deletion with pretty-printing of torrent details, and leverages environment variables to manage sensitive data.
 
@@ -71,9 +71,11 @@ venv\Scripts\activate
     Create a file named .env in the project root with the following content:
 
     ````dotenv 
-    BASE_URL=http://10.69.4.6:8080/api/v2
-    USERNAME=username
-    PASSWORD=password
+    QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+    QBIT_USERNAME=username
+    QBIT_PASSWORD=password
+    SONARR_BASE_URL=http://10.69.4.4:8989
+    SONARR_API_KEY=guid
     AGE_THRESHOLD_DAYS=16
     LAST_ACTIVITY_THRESHOLD_DAYS=10
     RUN_TIME=02:00
