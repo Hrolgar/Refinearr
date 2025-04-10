@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import time
+import schedule
 import argparse
 from utils import print_torrent_details, logger
 from api import login, list_torrents, delete_torrent
@@ -61,6 +62,11 @@ def process_torrents(filtered_torrents, interactive=True):
 
 
 def main(interactive=True):
+
+    if not login():
+        logger.error("Login failed during scheduled run. Skipping execution of this cycle.")
+        return
+    
     torrents = list_torrents()
     if not torrents:
         logger.info("No torrents found.")
@@ -74,6 +80,7 @@ def main(interactive=True):
 
     if not filtered_torrents:
         logger.info("No torrents are ready for deletion based on the filters.")
+        logger.info("Next scheduled run will be in 24 hours.")
         return
 
     process_torrents(filtered_torrents, interactive)
@@ -83,6 +90,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="qBittorrent Cleanup Script")
     parser.add_argument("--non-interactive", action="store_true",
                         help="Run in non-interactive mode (auto-delete filtered torrents)")
+    parser.add_argument("--schedule", action="store_true",
+                    help="Run the job on a schedule continuously")
+    
     args = parser.parse_args()
 
     if not all([os.getenv("USERNAME"), os.getenv("PASSWORD"), os.getenv("BASE_URL")]):
@@ -90,17 +100,22 @@ if __name__ == "__main__":
         exit(1)
 
     logger.info("Starting qBittorrent cleanup script...")
-    logger.info("Loading environment variables...")
 
-    if not login():
-        logger.info("Login failed. Exiting.")
-        exit(1)
+    if args.schedule: 
+        run_time = os.environ.get("RUN_TIME", "02:00") # Default to 2 AM if not set
+        logger.info(f"Scheduling the job to run daily at {run_time}...")
+        schedule.every().day.at(run_time).do(main, interactive=False)
 
-    if args.non_interactive:
-        logger.info("Running in non-interactive mode...")
-        main(interactive=False)
+        while True:
+            schedule.run_pending()
+            time.sleep(int(os.environ.get("SLEEP_INTERVAL", 60))) 
     else:
-        logger.info("Running in interactive mode...")
-        main(interactive=True)
+        logger.info("Running the script without scheduling.")
+        if args.non_interactive:
+            logger.info("Running in non-interactive mode.")
+            main(interactive=False)
+        else:
+            logger.info("Running in interactive mode.")
+            main(interactive=True)
 
     logger.info("Finished processing torrents.")

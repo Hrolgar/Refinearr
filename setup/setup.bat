@@ -26,6 +26,8 @@ if not exist ".env" (
         echo PASSWORD=password
         echo AGE_THRESHOLD_DAYS=16
         echo LAST_ACTIVITY_THRESHOLD_DAYS=10
+        echo RUN_TIME=02:00
+        echo SLEEP_TIME=60
     ) > .env
 ) else (
     echo .env file already exists. Skipping creation.
