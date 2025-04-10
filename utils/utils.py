@@ -1,4 +1,5 @@
 import time
+from utils import logger
 
 def readable_size(num_bytes):
     """Converts a size in bytes into a human-readable format (GiB, MiB, etc.)."""
@@ -33,16 +34,16 @@ def print_torrent_details(torrent):
     # Build each line with padding to ensure alignment.
     line_format = f"║ {{:<18}}: {{:<{width - 23}}}║"
 
-    print(f"{color_purple}╔{border}╗{color_reset}")
+    logger.info(f"{color_purple}╔{border}╗{color_reset}")
     title = "Torrent Details"
     # Center the title within the box width minus two border characters
-    print(f"{color_purple}║{title:^{width-2}}║{color_reset}")
-    print(f"{color_purple}╠{border}╣{color_reset}")
+    logger.info(f"{color_purple}║{title:^{width-2}}║{color_reset}")
+    logger.info(f"{color_purple}╠{border}╣{color_reset}")
     
-    print(line_format.format("Name", name))
-    print(line_format.format("Hash", torrent_hash))
-    print(line_format.format("Added on", added_on))
-    print(line_format.format("Last activity", last_activity))
-    print(line_format.format("Size", size))
+    logger.info(line_format.format("Name", name))
+    logger.info(line_format.format("Hash", torrent_hash))
+    logger.info(line_format.format("Added on", added_on))
+    logger.info(line_format.format("Last activity", last_activity))
+    logger.info(line_format.format("Size", size))
     
-    print(f"{color_purple}╚{border}╝{color_reset}")
+    logger.info(f"{color_purple}╚{border}╝{color_reset}")
