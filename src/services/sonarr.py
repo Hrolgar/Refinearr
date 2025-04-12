@@ -51,9 +51,6 @@ class SonarrService(BaseService):
         total_series = len(data)
         logger.info(f"Found {total_series} series to process in Sonarr.")
 
-        # for now just iterate through the first 10 series
-        data = dict(list(data.items())[:10])
-
         for index, (series_id, seasons) in enumerate(data.items(), start=1):
             for season in seasons:
                 rename_episodes = self.get_rename(series_id, season)
