@@ -1,7 +1,7 @@
 # tests/test_api.py
 import os
 import requests
-from api import login
+from src.api import login
 from unittest.mock import patch
 
 def fake_response(text, status_code):
@@ -17,9 +17,9 @@ def test_login_success(mock_post):
     mock_post.return_value = fake_response("Ok.", 200)
     
     # Set up environment variables.
-    os.environ['USERNAME'] = 'test'
-    os.environ['PASSWORD'] = 'test'
-    os.environ['BASE_URL'] = 'http://fake-url/api/v2'
+    os.environ['QBIT_USERNAME'] = 'test'
+    os.environ['QBIT_PASSWORD'] = 'test'
+    os.environ['QBIT_BASE_URL'] = 'http://fake-url/api/v2'
     
     # Call login() and expect True.
     assert login() is True
@@ -31,7 +31,7 @@ def test_login_failure(mock_post):
     
     os.environ['USERNAME'] = 'test'
     os.environ['PASSWORD'] = 'test'
-    os.environ['BASE_URL'] = 'http://fake-url/api/v2'
+    os.environ['QBIT_BASE_URL'] = 'http://fake-url/api/v2'
     
     # Call login() and expect False.
     assert login() is False

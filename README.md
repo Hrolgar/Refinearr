@@ -1,4 +1,4 @@
-# qBittorrent Manager
+# Refinarr
 
 This project provides a command-line tool to filter and delete torrents from qBittorrent based on defined criteria (e.g., age, last activity, popularity). It features interactive deletion with pretty-printing of torrent details, and leverages environment variables to manage sensitive data.
 
@@ -71,12 +71,26 @@ venv\Scripts\activate
     Create a file named .env in the project root with the following content:
 
     ````dotenv 
-    BASE_URL=http://10.69.4.6:8080/api/v2
-    USERNAME=username
-    PASSWORD=password
-    AGE_THRESHOLD_DAYS=16
-    LAST_ACTIVITY_THRESHOLD_DAYS=10
-    RUN_TIME=02:00
+   # qBittorrent Configuration (Optional)
+    QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+    QBIT_USERNAME=username
+    QBIT_PASSWORD=password
+   # Use either QBIT_RUN_TIME or QBIT_INTERVAL_MINUTES, but not both.
+    #QBIT_RUN_TIME=02:00
+    QBIT_INTERVAL_MINUTES=60
+    QBIT_TORRENT_AGE_THRESHOLD_DAYS=16
+    QBIT_TORRENT_LAST_ACTIVITY_THRESHOLD_DAYS=10
+   # SONARR Configuration (Optional)
+   # Use either SONARR_RUN_TIME or SONARR_INTERVAL_MINUTES, but not both.
+    SONARR_BASE_URL=http://10.69.4.4:8989
+    SONARR_API_KEY=guid
+    SONARR_RUN_TIME=04:00
+   # Radarr Configuration (Optional)
+   # Use either RADARR_RUN_TIME or RADARR_INTERVAL_MINUTES, but not both.
+    RADARR_BASE_URL=http://10.69.4.4:7878
+    RADARR_API_KEY=guid
+    RADARR_RUN_TIME=04:00
+    #RADARR_INTERVAL_MINUTES=60
     SLEEP_INTERVAL=60
     ````
 
