@@ -1,12 +1,12 @@
-# src/apis/qbittorrent_api.py
+# src/api/qbittorrent_api.py
 
 import os
-import requests
 
 from src.api.base_api import BaseAPI
-from src.utils import logger
+from src.utils import setup_logger
 from dotenv import load_dotenv
 
+logger = setup_logger(__name__, service_name="qBit", color="cyan")
 
 class QbitAPI(BaseAPI):
     """

@@ -1,9 +1,10 @@
 from src.api import SonarrAPI
 from src.services.base_service import BaseService
-from src.utils import logger
 import time
 import os
+from src.utils import setup_logger
 
+logger = setup_logger(__name__, service_name="sonarr", color="light_blue")
 class SonarrService(BaseService):
     """
     A service class that encapsulates the Sonarr cleanup logic.
