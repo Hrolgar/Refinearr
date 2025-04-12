@@ -21,7 +21,7 @@ REM Check if the .env file exists; if not, create it.
 if not exist ".env" (
     echo Creating .env file with default values...
     (
-        echo QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+        echo QBIT_BASE_URL=http://10.69.4.6:8080
         echo QBIT_USERNAME=username
         echo QBIT_PASSWORD=password
         echo SONARR_BASE_URL=http://10.69.4.4:8989

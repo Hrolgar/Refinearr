@@ -2,34 +2,36 @@
 
 import os
 import requests
+
+from src.api.base_api import BaseAPI
 from src.utils import logger
 from dotenv import load_dotenv
 
 
-class QbitAPI:
+class QbitAPI(BaseAPI):
     """
     A class to interact with the qBittorrent WebUI API.
     """
 
     def __init__(self, base_url: str = None, username: str = None, password: str = None):
         """
-        Initialize the QbitAPI client by setting up a requests session and loading
-        configuration (base URL, username, and password) from environment variables.
+        Initialize the QbitAPI class with the base URL, username, and password.
+        :param base_url: The base URL for the qBittorrent WebUI.
+        :param username: The username for the qBittorrent WebUI.
+        :param password: The password for the qBittorrent WebUI.
+        :raises ValueError: If base_url, username, or password is not provided.
         """
-        self.session = requests.Session()
-        # Use environment variables to configure the API client.
         self.base_url = base_url or os.environ.get("QBIT_BASE_URL")
         self.username = username or os.environ.get("QBIT_USERNAME")
         self.password = password or os.environ.get("QBIT_PASSWORD")
-
-    def _build_url(self, endpoint: str) -> str:
-        """
-        Construct a full URL for a given endpoint.
-
-        :param endpoint: API endpoint path, e.g., 'auth/login'.
-        :return: Full URL string.
-        """
-        return f"{self.base_url}/{endpoint}"
+        super().__init__(
+            base_url=base_url,
+            env_base_url="QBIT_BASE_URL",
+            api_version="v2",
+            default_service="qbit"
+        )
+        if not self.base_url or not self.username or not self.password:
+            raise ValueError("Missing qbit base URL, username, or password")
 
     def login(self) -> bool:
         """

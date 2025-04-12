@@ -11,6 +11,8 @@ class BaseService(ABC):
     Abstract base class for service classes interacting with APIs.
     Forces subclasses to implement the register_schedule method.
     """
+    def __init__(self):
+        self.schedule_job = None
 
     @abstractmethod
     def run_job(self, *args, **kwargs):
@@ -34,12 +36,15 @@ class BaseService(ABC):
 
         if interval_minutes:
             logger.info(f"Registering {self.__class__.__name__} to run every {interval_minutes} minutes.")
-            schedule.every(interval_minutes).minutes.do(self.run_job)
+            job = schedule.every(interval_minutes).minutes.do(self.run_job)
+            self.schedule_job = job
         elif run_time:
             logger.info(f"Registering {self.__class__.__name__} to run daily at {run_time}.")
-            schedule.every().day.at(run_time).do(self.run_job)
+            job = schedule.every().day.at(run_time).do(self.run_job)
+            self.schedule_job = job
         else:
             # Optionally provide a default schedule or raise an error.
             default_run_time = "02:00"
             logger.info(f"No scheduling configuration provided. Defaulting to daily at {default_run_time}.")
-            schedule.every().day.at(default_run_time).do(self.run_job)
+            job = schedule.every().day.at(default_run_time).do(self.run_job)
+            self.schedule_job = job

@@ -20,7 +20,7 @@ pip install -r requirements.txt
 if [ ! -f ".env" ]; then
     echo "Creating .env file with default values..."
     cat <<EOF > .env
-QBIT_BASE_URL=http://10.69.4.6:8080/api/v2
+QBIT_BASE_URL=http://10.69.4.6:8080/
 QBIT_USERNAME=username
 QBIT_PASSWORD=password
 SONARR_QBIT_BASE_URL=http://10.69.4.4:8989
