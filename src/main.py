@@ -18,12 +18,11 @@ def parse_args():
     :return: Namespace with parsed arguments.
     """
     parser = argparse.ArgumentParser(description="Multi-Service Cleanup Script")
-    # parser.add_argument("--service", choices=["qbit", "sonarr", "both"], default="qbit", help="Which service(s) to run: qbit, sonarr, or both.")
     parser.add_argument("--non-interactive", action="store_true", help="Run in non-interactive mode (auto-delete).")
     parser.add_argument("--schedule", action="store_true", help="Run on a daily schedule and never exit.")
     return parser.parse_args()
 
-# Check what to run, is based on the .env file, for example, if qbitBaseurl, username and password are set, then run qbit.  if sonarrBaseurl, username and password are set, then run sonarr.  if both are set, then run both.
+
 def check_services():
     """
     Check which services are enabled based on environment variables.
@@ -38,12 +37,11 @@ def check_services():
         services.append("radarr")
     return services
 
-def schedule_services():
+def schedule_services(services: list):
     """
     Schedule all enabled services with their own run times.
     This function schedules each service's job and then enters one infinite loop.
     """
-    services = check_services()
     logger.info(f"Services to schedule: {services}")
 
     if "qbit" in services:
@@ -60,11 +58,10 @@ def schedule_services():
         schedule.run_pending()
         time.sleep(sleep_interval)
 
-def run_services(non_interactive: bool):
+def run_services(services: list, non_interactive: bool):
     """
     Run each enabled service once.
     """
-    services = check_services()
     logger.info(f"Services to run: {services}")
 
     if "qbit" in services:
@@ -88,10 +85,16 @@ def main():
     args = parse_args()
     logger.info(f"Starting with arguments: {args}")
 
+    services = check_services()
+    if not services:
+        logger.error("No services enabled. Please check your environment variables.")
+        return
+    logger.info(f"Enabled services: {services}")
+
     if args.schedule:
-        schedule_services()
+        schedule_services(services)
     else:
-        run_services(non_interactive=args.non_interactive)
+        run_services(services, non_interactive=args.non_interactive)
 
 if __name__ == "__main__":
     main()
