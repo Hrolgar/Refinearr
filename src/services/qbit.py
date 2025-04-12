@@ -11,8 +11,8 @@ from src.utils import logger
 from src.utils import print_torrent_details
 
 SECONDS_PER_DAY = 86400
-AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", 16))
-LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("LAST_ACTIVITY_THRESHOLD_DAYS", 7))
+AGE_THRESHOLD_DAYS = int(os.environ.get("QBIT_TORRENT_AGE_THRESHOLD_DAYS", 16))
+LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("QBIT_TORRENT_LAST_ACTIVITY_THRESHOLD_DAYS", 7))
 
 
 class QbitService(BaseService):
