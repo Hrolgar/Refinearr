@@ -11,6 +11,7 @@ class RadarrService(BaseService):
     """
 
     def __init__(self, sleep_interval: int = 40):
+        super().__init__()
         self.sonarr = RadarrAPI()
         self.sleep_interval = sleep_interval
 

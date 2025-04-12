@@ -14,7 +14,8 @@ class SonarrAPI(BaseAPI):
             api_key=api_key,
             env_base_url="SONARR_BASE_URL",
             env_api_key="SONARR_API_KEY",
-            api_version="v3"
+            api_version="v3",
+            default_service="sonarr"
         )
 
 

@@ -24,6 +24,7 @@ class QbitService(BaseService):
         """
         Initialize the QbitService with a QbitAPI instance and sleep interval.
         """
+        super().__init__()
         self.api = QbitAPI()
 
 
@@ -124,6 +125,11 @@ class QbitService(BaseService):
 
     def run_job(self, *args, **kwargs):
         self.start(interactive=False)
+        if self.schedule_job and self.schedule_job.next_run:
+            next_run = self.schedule_job.next_run.strftime("%d.%m.%Y %H:%M")
+            logger.info("[qBit] Next run at: %s", next_run)
+        else:
+            logger.info("[qBit] Next run time is not available.")
 
 
 if __name__ == "__main__":

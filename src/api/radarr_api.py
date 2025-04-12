@@ -14,7 +14,8 @@ class RadarrAPI(BaseAPI):
             api_key=api_key,
             env_base_url="RADARR_BASE_URL",
             env_api_key="RADARR_API_KEY",
-            api_version="v3"
+            api_version="v3",
+            default_service="radarr"
         )
 
     def get_large_movies(self, min_size_gb: float = 2.0) -> list:

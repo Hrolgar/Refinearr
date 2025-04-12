@@ -9,6 +9,7 @@ class SonarrService(BaseService):
     A service class that encapsulates the Sonarr cleanup logic.
     """
     def __init__(self, sleep_interval: int = 40):
+        super().__init__()
         self.sonarr = SonarrAPI(base_url='http://10.69.4.4:8989',api_key='8cf09f28bcb3419d8d125da5f0b8326f')
         self.sleep_interval = sleep_interval
 
@@ -74,6 +75,12 @@ class SonarrService(BaseService):
         This method is called by the scheduler to run the job.
         """
         self.start()
+        if self.schedule_job and self.schedule_job.next_run:
+            next_run_time = self.schedule_job.next_run.strftime("%d.%m.%Y %H:%M")
+            logger.info("[Sonarr] Next run at: %s", next_run_time)
+        else:
+            logger.info("[Sonarr] Next run time is not available.")
+
 
     @staticmethod
     def sonarr_scheduled_cleanup():
