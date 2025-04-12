@@ -1,9 +1,10 @@
 from src.api import SonarrAPI
+from src.services.base_service import BaseService
 from src.utils import logger
 import time
-import schedule
+import os
 
-class SonarrService:
+class SonarrService(BaseService):
     """
     A service class that encapsulates the Sonarr cleanup logic.
     """
@@ -15,7 +16,6 @@ class SonarrService:
         """
         Retrieve a list of episodeFileId's for renaming for the specified series and season.
         """
-        # Build the URL directly using the SonarrAPI attributes.
         url = f"{self.sonarr.BASE_URL}/api/v3/rename?apikey={self.sonarr.API_KEY}&seriesId={series_id}&seasonNumber={season_number}"
         response = self.sonarr.session.get(url)
         if response.ok:
@@ -69,22 +69,36 @@ class SonarrService:
                     time.sleep(self.sleep_interval)
         logger.info("Finished Sonarr cleanup service.")
 
-    def register_schedule(self, run_time: str = "03:00") -> None:
+    def run_job(self, *args, **kwargs):
         """
-        Register the cleanup process to run daily at the specified time.
-
-        This method registers the cleanup job with the schedule library and does not enter
-        its own infinite loop; a central scheduler will handle that.
-
-        :param run_time: Time string in HH:MM (24-hour) format (default is "03:00").
+        This method is called by the scheduler to run the job.
         """
-        logger.info("Registering Sonarr cleanup daily at %s.", run_time)
-        schedule.every().day.at(run_time).do(self.start)
+        self.start()
+
+    @staticmethod
+    def sonarr_scheduled_cleanup():
+        sonarr_interval = os.getenv("SONARR_INTERVAL_MINUTES")
+        sonarr_run_time = os.getenv("SONARR_RUN_TIME")
+        if sonarr_interval and sonarr_run_time:
+            logger.error("Both SONARR_INTERVAL_MINUTES and SONARR_RUN_TIME are defined. Please set only one.")
+            exit(1)
+        sonarr_service = SonarrService()
+        if sonarr_interval:
+            try:
+                interval = int(sonarr_interval)
+            except ValueError:
+                logger.error("SONARR_INTERVAL_MINUTES must be an integer.")
+                exit(1)
+            sonarr_service.register_schedule(interval_minutes=interval)
+            logger.info("Registered Sonarr cleanup to run every %d minutes", interval)
+        elif sonarr_run_time:
+            sonarr_service.register_schedule(run_time=sonarr_run_time)
+            logger.info("Registered Sonarr cleanup at %s", sonarr_run_time)
+        else:
+            sonarr_service.register_schedule(run_time="03:00")
+            logger.info("No SONARR schedule config found. Defaulting to daily at 03:00")
 
     # Example usage:
 if __name__ == "__main__":
     service = SonarrService(sleep_interval=40)
     service.start()
-
-    # Or run on a schedule:
-    # service.schedule(run_time="03:00")

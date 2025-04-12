@@ -1,8 +1,7 @@
-import os
-import requests
+from src.api.base_api import BaseAPI
 from src.utils import logger
 
-class SonarrAPI:
+class SonarrAPI(BaseAPI):
     """
     A class to interact with the Sonarr API.
     """
@@ -10,46 +9,14 @@ class SonarrAPI:
         """
         Initialize the SonarrAPI class with the base URL and API key.
         """
+        super().__init__(
+            base_url=base_url,
+            api_key=api_key,
+            env_base_url="SONARR_BASE_URL",
+            env_api_key="SONARR_API_KEY",
+            api_version="v3"
+        )
 
-        self.session = requests.Session()
-        self.API_KEY = api_key or os.environ.get("SONARR_API_KEY")
-        self.BASE_URL = base_url or os.environ.get("SONARR_BASE_URL")
-
-
-    def _build_url(self, endpoint):
-        """
-        Build the full URL for a given endpoint.
-        :param endpoint: The API endpoint to call.
-        :return: The full URL for the API call.
-        """
-        return f"{self.BASE_URL}/api/v3/{endpoint}?apikey={self.API_KEY}"
-
-
-    def _get(self, path: str, params: dict = None) -> requests.Response:
-        """
-        Internal helper for GET requests.
-
-        :param path: API endpoint path.
-        :param params: Additional query parameters.
-        :return: A Response object.
-        """
-        url = self._build_url(path)
-        response = self.session.get(url, params=params)
-        logger.debug(f"GET {url} with params {params} returned {response.status_code}")
-        return response
-
-    def _post(self, path: str, data: dict) -> requests.Response:
-        """
-        Internal helper for POST requests.
-
-        :param path: API endpoint path.
-        :param data: Dictionary payload to send as JSON.
-        :return: A Response object.
-        """
-        url = self._build_url(path)
-        response = self.session.post(url, json=data)
-        logger.debug(f"POST {url} with payload {data} returned {response.status_code}")
-        return response
 
     def get_all_series(self) -> list:
         """
@@ -113,10 +80,12 @@ class SonarrAPI:
 
 
 if __name__ == "__main__":
-    sonarr = SonarrAPI(
-        base_url='http://10.69.4.4:8989',
-        api_key='8cf09f28bcb3419d8d125da5f0b8326f'
-    )
+    from src.api import SonarrAPI
+    from src.utils import logger
+    from dotenv import load_dotenv
+
+    load_dotenv(override=True)
+    sonarr = SonarrAPI()
     all_series = sonarr.get_all_series()
     logger.info(f"Found {len(all_series)} series in Sonarr.")
 

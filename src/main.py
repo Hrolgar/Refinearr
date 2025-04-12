@@ -2,8 +2,9 @@ import os
 import argparse
 import schedule
 import time
+
 from utils import logger
-from services import QbitService, SonarrService
+from services import QbitService, SonarrService, RadarrService
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -33,6 +34,8 @@ def check_services():
         services.append("qbit")
     if os.getenv("SONARR_BASE_URL") and os.getenv("SONARR_API_KEY"):
         services.append("sonarr")
+    if os.getenv("RADARR_BASE_URL") and os.getenv("RADARR_API_KEY"):
+        services.append("radarr")
     return services
 
 def schedule_services():
@@ -44,16 +47,12 @@ def schedule_services():
     logger.info(f"Services to schedule: {services}")
 
     if "qbit" in services:
-        qbit_run_time = os.getenv("QBIT_RUN_TIME", "02:00")
         qbit_service = QbitService()
-        qbit_service.register_schedule(run_time=qbit_run_time)
-        logger.info("Registered qBit cleanup schedule at %s", qbit_run_time)
+        qbit_service.qbit_scheduled_cleanup()
 
     if "sonarr" in services:
-        sonarr_run_time = os.getenv("SONARR_RUN_TIME", "03:00")
-        logger.info(f"Scheduling Sonarr cleanup daily at {sonarr_run_time} (non-interactive).")
         sonarr_service = SonarrService()
-        sonarr_service.register_schedule(run_time=sonarr_run_time)
+        sonarr_service.sonarr_scheduled_cleanup()
 
     sleep_interval = int(os.getenv("SLEEP_INTERVAL", 60))
     logger.info("Entering scheduling loop. Press Ctrl+C to exit.")
@@ -73,12 +72,16 @@ def run_services(non_interactive: bool):
         qbit_service = QbitService()
 
         logger.info("qBit cleanup will run once in interactive mode." if non_interactive else "qBit cleanup will run in non-interactive mode.")
-        qbit_service.run_cleanup(interactive=not non_interactive)
+        qbit_service.start(interactive=not non_interactive)
+    elif "radarr" in services:
+        logger.info("Running Radarr cleanup...")
+        radarr_service = RadarrService()
+        radarr_service.start()
 
-    # if "sonarr" in services:
-    #     logger.info("Running Sonarr cleanup...")
-    #     sonarr_service = SonarrService()
-    #     # sonarr_service.start()
+    if "sonarr" in services:
+        logger.info("Running Sonarr cleanup...")
+        sonarr_service = SonarrService()
+        sonarr_service.start()
 
 
 def main():

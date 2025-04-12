@@ -2,11 +2,11 @@
 
 import os
 import time
-import schedule
 from typing import Dict, Any
 from dotenv import load_dotenv
 
 from src.api import QbitAPI
+from src.services.base_service import BaseService
 from src.utils import logger
 from src.utils import print_torrent_details
 
@@ -15,7 +15,7 @@ AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", 16))
 LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("LAST_ACTIVITY_THRESHOLD_DAYS", 7))
 
 
-class QbitService:
+class QbitService(BaseService):
     """
     A service class that encapsulates the qBittorrent cleanup logic.
     """
@@ -23,10 +23,9 @@ class QbitService:
     def __init__(self) -> None:
         """
         Initialize the QbitService with a QbitAPI instance and sleep interval.
-
-        :param sleep_interval: Time (in seconds) to pause between API calls.
         """
         self.api = QbitAPI()
+
 
     @staticmethod
     def is_ready_for_delete(torrent: Dict[str, Any], current_time: float) -> bool:
@@ -40,14 +39,13 @@ class QbitService:
         """
         added_age = current_time - torrent.get("added_on", 0)
         last_activity_age = current_time - torrent.get("last_activity", 0)
-        popularity = torrent.get("popularity", 1.0)
         is_audiobook = torrent.get("category") == "audiobooks"
+        is_ebook = torrent.get("category") == "ebooks"
         return (added_age > AGE_THRESHOLD_DAYS * SECONDS_PER_DAY and
-                last_activity_age > LAST_ACTIVITY_THRESHOLD_DAYS * SECONDS_PER_DAY and
-                popularity < 0.6 and not is_audiobook)
+                last_activity_age > LAST_ACTIVITY_THRESHOLD_DAYS * SECONDS_PER_DAY and not is_audiobook and not is_ebook)
 
 
-    def run_cleanup(self, interactive: bool = True) -> None:
+    def start(self, interactive: bool = True) -> None:
         """
         Execute the qBittorrent cleanup process once.
         This method logs in, retrieves the torrent list, filters torrents based on criteria,
@@ -94,17 +92,38 @@ class QbitService:
                 logger.info("[qBit] Exiting cleanup loop.")
                 break
 
-    def register_schedule(self, run_time: str = "02:00") -> None:
+    @staticmethod
+    def qbit_scheduled_cleanup():
         """
-        Register the qBittorrent cleanup process to run daily at the specified time.
-
-        This method only registers the cleanup job with the schedule library,
-        without entering its own infinite loop.
-
-        :param run_time: Time string in HH:MM (24-hour) format (default "02:00").
+        Schedule the qBittorrent cleanup process to run based on environment variables.
         """
-        logger.info(f"Registering qBit cleanup daily at {run_time} (non-interactive).")
-        schedule.every().day.at(run_time).do(self.run_cleanup, interactive=False)
+        qbit_interval = os.getenv("QBIT_INTERVAL_MINUTES")
+        qbit_run_time = os.getenv("QBIT_RUN_TIME")
+        if qbit_interval and qbit_run_time:
+            logger.error("Both QBIT_INTERVAL_MINUTES and QBIT_RUN_TIME are defined. Please set only one.")
+            exit(1)
+        qbit_service = QbitService()
+        if qbit_interval:
+            try:
+                interval = int(qbit_interval)
+            except ValueError:
+                logger.error("QBIT_INTERVAL_MINUTES must be an integer.")
+                exit(1)
+            qbit_service.register_schedule(interval_minutes=interval)
+            next_run_time = time.strftime("%H:%M", time.localtime(time.time() + (interval * 60)))
+            logger.info("Registered qBit cleanup to run every %d minutes, starting at %s", interval, next_run_time)
+
+        elif qbit_run_time:
+            qbit_service.register_schedule(run_time=qbit_run_time)
+            logger.info("Registered qBit cleanup at %s", qbit_run_time)
+        else:
+            # Default schedule if nothing is provided
+            qbit_service.register_schedule(run_time="02:00")
+            logger.info("No QBIT schedule config found. Defaulting to daily at 02:00")
+
+
+    def run_job(self, *args, **kwargs):
+        self.start(interactive=False)
 
 
 # For testing purposes:
@@ -114,7 +133,7 @@ if __name__ == "__main__":
     LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("LAST_ACTIVITY_THRESHOLD_DAYS", 7))
 
     service = QbitService()
-    service.run_cleanup(interactive=True)
+    service.start(interactive=True)
 
     # To run the cleanup once (non-interactive mode):
     # service.run_cleanup(interactive=False)
