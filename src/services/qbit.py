@@ -126,7 +126,6 @@ class QbitService(BaseService):
         self.start(interactive=False)
 
 
-# For testing purposes:
 if __name__ == "__main__":
     load_dotenv(override=True)
     AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", 16))
@@ -134,9 +133,3 @@ if __name__ == "__main__":
 
     service = QbitService()
     service.start(interactive=True)
-
-    # To run the cleanup once (non-interactive mode):
-    # service.run_cleanup(interactive=False)
-
-    # To schedule the cleanup daily:
-    # service.schedule_cleanup(run_time=os.environ.get("RUN_TIME", "02:00"))

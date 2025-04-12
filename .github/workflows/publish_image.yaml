@@ -1,0 +1,25 @@
+name: "Build and Publish image to Docker"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t hrolgar/refinearr:latest .
+
+      - name: Login to Docker Hub
+        run: |
+          docker login -u hrolgar -p ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push Docker image
+        run: |
+          docker push hrolgar/refinearr:latest
