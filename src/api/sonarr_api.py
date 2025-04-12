@@ -42,7 +42,6 @@ class SonarrAPI(BaseAPI):
         :return: A dictionary with series details, or empty if there is an error.
         """
         path = f"series/{series_id}"
-        # Option: includeSeasonImages can be disabled.
         response = self._get(path, params={"includeSeasonImages": "false"})
         if response.ok:
             return response.json()
