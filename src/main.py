@@ -3,11 +3,12 @@ import argparse
 import schedule
 import time
 
-from utils import logger
+from utils.logger import setup_logger
 from services import QbitService, SonarrService, RadarrService
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
+logger = setup_logger(__name__, service_name="main")
 
 def parse_args():
     """

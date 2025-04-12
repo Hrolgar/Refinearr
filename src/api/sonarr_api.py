@@ -1,5 +1,7 @@
 from src.api.base_api import BaseAPI
-from src.utils import logger
+from src.utils import setup_logger
+
+logger = setup_logger(__name__, service_name="sonarr", color="light_blue")
 
 class SonarrAPI(BaseAPI):
     """

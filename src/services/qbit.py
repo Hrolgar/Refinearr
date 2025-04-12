@@ -7,13 +7,14 @@ from dotenv import load_dotenv
 
 from src.api import QbitAPI
 from src.services.base_service import BaseService
-from src.utils import logger
 from src.utils import print_torrent_details
+from src.utils.logger import setup_logger
 
 SECONDS_PER_DAY = 86400
 AGE_THRESHOLD_DAYS = int(os.environ.get("QBIT_TORRENT_AGE_THRESHOLD_DAYS", 16))
 LAST_ACTIVITY_THRESHOLD_DAYS = int(os.environ.get("QBIT_TORRENT_LAST_ACTIVITY_THRESHOLD_DAYS", 7))
 
+logger = setup_logger(__name__, service_name="qBit", color="cyan")
 
 class QbitService(BaseService):
     """
