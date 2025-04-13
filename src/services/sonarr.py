@@ -11,7 +11,7 @@ class SonarrService(BaseService):
     """
     def __init__(self, sleep_interval: int = 40):
         super().__init__()
-        self.sonarr = SonarrAPI(base_url='http://10.69.4.4:8989',api_key='8cf09f28bcb3419d8d125da5f0b8326f')
+        self.sonarr = SonarrAPI()
         self.sleep_interval = sleep_interval
 
     def get_rename(self, series_id: int, season_number: int) -> list[str]:
@@ -31,15 +31,20 @@ class SonarrService(BaseService):
     def get_dict_of_series(self) -> dict:
         """
         Retrieve series data and return a mapping of series IDs to a list of season numbers needing renaming.
-        This is just an example; in production, use real logic to decide which seasons to process.
+        Now it retrieves the actual season numbers for each series.
         """
         series_list = self.sonarr.get_all_series()
         data = {}
         for series in series_list:
             series_id = series.get("id")
             if series_id is not None:
-                # For demonstration, assume each series has seasons 1 and 2.
-                data[series_id] = [1, 2]
+                series_details = self.sonarr.get_series(series_id)
+                seasons_info = series_details.get("seasons", [])
+                if seasons_info:
+                    season_numbers = [season["seasonNumber"] for season in seasons_info if "seasonNumber" in season]
+                else:
+                    season_numbers = [1]
+                data[series_id] = season_numbers
         return data
 
     def start(self):
