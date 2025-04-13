@@ -1,16 +1,11 @@
 # Refinarr
 
-[//]: # (<a href="https://github.com/hrolgar/refinearr">)
-
-[//]: # (<img alt="GPL 2.0 License" src="https://img.shields.io/github/license/hrolgar/refinarr.svg"/>)
-
-[//]: # (</a>)
-<a href="https://github.com/hrolgar/refinearr/releases">
-<img alt="Current Release" src="https://img.shields.io/github/release/hrolgar/refinearr.svg"/>
-</a>
-<a href="https://hub.docker.com/r/hrolgar/refinearr">
-<img alt="Docker Pull Count" src="https://img.shields.io/docker/pulls/hrolgar/refinearr.svg"/>
-</a>
+[![Docker Pulls](https://img.shields.io/docker/pulls/hrolgar/refinearr?style=flat-square)](https://hub.docker.com/r/hrolgar/refinearr)
+[![Docker Build Status](https://img.shields.io/docker/cloud/build/hrolgar/refinearr?style=flat-square)](https://hub.docker.com/r/hrolgar/refinearr)
+[![Docker Stars](https://img.shields.io/docker/stars/hrolgar/refinearr?style=flat-square)](https://hub.docker.com/r/hrolgar/refinearr)
+[![CI](https://github.com/hrolgar/refinearr/actions/workflows/publish_image.yaml/badge.svg)](https://github.com/hrolgar/refinearr/actions)
+[![GitHub release](https://img.shields.io/github/v/release/hrolgar/refinearr?style=flat-square)](https://github.com/hrolgar/refinearr/releases)
+[![License](https://img.shields.io/github/license/hrolgar/refinearr?style=flat-square)](LICENSE)
 
 Refinarr is a command-line tool that goes beyond filtering and deleting torrents from qBittorrent. In addition to its original functionality, Refinarr now integrates with Sonarr to handle tasks such as renaming episode files based on updated series information. (Radarr integration is also included as a framework for future enhancements.) The project leverages environment variables to manage sensitive data and configuration details.
 ## Features
