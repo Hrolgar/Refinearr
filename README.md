@@ -133,8 +133,8 @@ python main.py
 ### Manual Setup
 1. Clone the Repository
     ````bash 
-    git clone https://your.repo.url/qbittorrent-manager.git
-    cd qbittorrent-manager
+    git clone https://github.com/Hrolgar/Refinearr.git
+    cd Refinarr
     ````
 2. Create and Activate a Virtual Environment:
 
